@@ -12,21 +12,24 @@ function listarTabla() {
         type: 'GET',
         datatype: 'JSON',
         success: function (response) {
-            var valor = '';
-            for (i = 0; i < response.length; i++) {
-                valor += '<tr>' +
-                    '<td>' + response[i].reference + '</td>' +
-                    '<td>' + response[i].brand + '</td>' +
-                    '<td>' + response[i].category + '</td>' +
-                    '<td>' + response[i].presentation + '</td>' +
-                    '<td>' + response[i].description + '</td>' +
-                    '<td>' + response[i].price + '</td>' +
-                    '<td>' + response[i].quantity + '</td>' +
-                    '<td>' + response[i].photography + '</td>' +
-                    '<td><button data-bs-toggle="modal" data-bs-target="#modelId" onclick="consultar(' + response[i].reference + ')" class="btn btn-warning">Editar</button>' +
-                    `<button onclick="borrar(${response[i].reference})" class="btn btn-danger">Eliminar</button></td>` +
-                    '</tr>';
+            let valor="<table>";
+            for(i=0;i<response.length;i++){
+                valor+="<tr>";
+                
+                valor+="<td>"+response[i].reference+"</td>";
+                valor+="<td>"+response[i].brand+"</td>";
+                valor+="<td>"+response[i].category+"</td>";
+                valor+="<td>"+response[i].presentation+"</td>";
+                valor+="<td>"+response[i].description+"</td>";
+                valor+="<td>"+response[i].price+"</td>";
+                valor+="<td>"+response[i].quantity+"</td>";
+                valor+="<td>"+response[i].photography+"</td>";
+                valor+="<td> <button onclick='consultar("+JSON.stringify(response[i].reference)+")'  data-bs-toggle='modal' data-bs-target='#modelId' class='btn btn-warning'>Editar</button>";
+                valor+="<td> <button onclick='borrarProducto("+JSON.stringify(response[i].reference)+")' class='btn btn-danger'>Eliminar</button>";
+                valor+="</tr>";
             }
+            valor+="</table>";
+
             $('#tbody').html(valor);
         }
     });
@@ -128,41 +131,46 @@ function registrarProducto() {
 
 }
 
-function borrar(referenceId) {
-    alert(referenceId);
-    var bool = confirm("Seguro de borrar el registro?");
-    if (bool) {
-        $.ajax({
-            url: urlApi + '/' + referenceId,
-            type: 'DELETE',
-            contentType: 'application/json',
-            success: function (response) {
-                alert("se elimino correctamente");
-                listarTabla();
-            },
-            error: function (jqXHR, textStatus, errorThrown) {
-                console.log('Error');
-            }
-        });
-    }
+function borrarProducto(reference) {
+    console.log(reference);
+    let myData = {
+        id: reference
+    };
+    let dataToSend = JSON.stringify(myData);
+    console.log(dataToSend);
+    $.ajax({
+        url: urlApi+"/"+reference,
+        type: "DELETE",
+        data: dataToSend,
+        contentType: "application/JSON",
+        datatype: "JSON",
+        success: function (response) {
+            alert("se elimino correctamente");
+            listarTabla();
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            console.log('Error');
+        }
+    });
 }
 
-function consultar(referenceId) {
+
+function consultar(reference) {
     $.ajax({
-        url: urlApi + '/' + referenceId,
+        url: urlApi + '/' + reference,
         type: 'GET',
         datatype: 'JSON',
         success: function (response) {
             $("#reference").val(response.reference);
             $("#brand").val(response.brand);
             $("#category").val(response.category);
-            $("#presentation").val(response.os);
+            $("#presentation").val(response.presentation);
             $("#description").val(response.description);
             $("#price").val(response.price);
             $("#quantity").val(response.quantity);
             $("#photography").val(response.photography);
 
-            let valor = '<input class="btn form-control btn btn-warning" data-bs-dismiss="modal"  id="botonActualizar" type="submit" value="Actualizar" onclick="update(' + referenceId + ')">';
+            let valor = "<input class='btn form-control btn btn-warning' data-bs-dismiss='modal'  id='botonActualizar' type='submit' value='Actualizar' onclick='update(" + JSON.stringify(response.reference) + ")'>";
             $('#botonFormulario').html(valor);
             $("#botonRegistrar").remove();
         }
